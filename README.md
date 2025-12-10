@@ -236,7 +236,7 @@ Or with absolute URLs for production:
 ## 🧪 Testing OG Images
 
 After deployment, validate with:
-
+- [toolbox.jozapf.de | Meta Debug](https://toolbox.jozapf.de/meta_debug_web.py)
 - [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
 - [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/)
 - [Twitter Card Validator](https://cards-dev.twitter.com/validator)
