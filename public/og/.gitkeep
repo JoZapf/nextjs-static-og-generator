@@ -1,0 +1,7 @@
+# Generated OG images directory
+# Images are created by: npm run generate:og
+# 
+# Output files (gitignored):
+#   og-home.png
+#   og-docs.png
+#   og-blog-*.png

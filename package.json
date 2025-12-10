@@ -1,0 +1,35 @@
+{
+  "name": "dynamic-og-generator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build-time OG image generation for Next.js static export",
+  "scripts": {
+    "setup": "tsx scripts/download-fonts.ts",
+    "generate:og": "tsx scripts/generate-og-images.ts",
+    "predev": "npm run setup && npm run generate:og",
+    "dev": "next dev -p 3000",
+    "prebuild": "npm run setup && npm run generate:og",
+    "build": "next build",
+    "preview": "npx serve out -l 8080",
+    "clean": "rm -rf out .next public/og assets/fonts"
+  },
+  "dependencies": {
+    "next": "^14.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "gray-matter": "^4.0.3",
+    "marked": "^12.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.3.0",
+    "tsx": "^4.7.0",
+    "satori": "^0.10.0",
+    "@resvg/resvg-js": "^2.6.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
