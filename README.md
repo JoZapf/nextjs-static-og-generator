@@ -102,12 +102,12 @@ const PAGES: PageConfig[] = [
 
 | Property | Required | Description |
 |----------|----------|-------------|
-| `slug` | ✅ | Filename: `og-{slug}.png` |
-| `title` | ✅ | Large headline text |
-| `subtitle` | ✅ | Secondary text below title |
-| `description` | ✅ | Longer description text |
-| `badge` | ✅ | Top badge/label |
-| `accentColors` | ❌ | Custom gradient colors |
+| `slug` | Yes | Filename: `og-{slug}.png` |
+| `title` | Yes | Large headline text |
+| `subtitle` | Yes | Secondary text below title |
+| `description` | Yes | Longer description text |
+| `badge` | Yes | Top badge/label |
+| `accentColors` | No | Custom gradient colors (start, middle, end) |
 
 ---
 
