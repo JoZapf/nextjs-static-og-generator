@@ -7,9 +7,9 @@
     "setup": "tsx scripts/download-fonts.ts",
     "generate:og": "tsx scripts/generate-og-images.ts",
     "predev": "npm run setup && npm run generate:og",
-    "dev": "next dev -p 3000",
+    "dev": "next dev -p 3000 --turbopack=false",
     "prebuild": "npm run setup && npm run generate:og",
-    "build": "next build",
+    "build": "next build --no-turbopack",
     "preview": "npx serve out -l 8080",
     "clean": "rm -rf out .next public/og assets/fonts"
   },
