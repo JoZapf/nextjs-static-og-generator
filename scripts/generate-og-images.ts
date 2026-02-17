@@ -148,29 +148,55 @@ function loadImageAsBase64(imagePath: string): string {
 // ============================================================================
 // OG IMAGE TEMPLATE
 // ============================================================================
+//
+// Visual layer stack (bottom to top):
+//
+//   1. Background Image    – full-bleed photo, covers entire 1200×630 canvas
+//   2. Dark Overlay         – semi-transparent gradient, dims the photo for text contrast
+//   3. Glassmorphism Card   – centered frosted card (1100×550), holds all text
+//   4. Glossy Overlay       – subtle top-half shine on the card (faux light reflection)
+//   5. Content elements     – badge, title, subtitle, divider, description
+//
+// Color system:
+//   rgba(r,g,b, ALPHA) – alpha controls opacity: 0.0 = invisible, 1.0 = fully opaque
+//   #ffffff = white, used at varying alpha levels for the glass effect
+//
+// Text opacity hierarchy (highest → lowest visual weight):
+//   Title       #ffffff      = 100% white
+//   Badge       rgba 0.9     =  90% white
+//   Subtitle    rgba 0.85    =  85% white
+//   Description rgba 0.7     =  70% white
+//
+// Satori constraint: no CSS classes, no shorthand – every style must be an inline object.
+// ============================================================================
 
 function createOGTemplate(page: PageConfig, bgImageDataUrl: string) {
+  // Accent colors for the divider line – overridable per page via accentColors
   const colors = page.accentColors || {
-    start: '#e26b34',  // Orange (default)
-    middle: '#336851', // Green
-    end: '#1b3c65',    // Blue
+    start: '#e26b34',  // Orange (default, left)
+    middle: '#336851', // Green  (default, center)
+    end: '#1b3c65',    // Blue   (default, right)
   };
 
   return {
     type: 'div',
     props: {
+      // ROOT CONTAINER – the full 1200×630 canvas
       style: {
         width: '100%',
         height: '100%',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
+        alignItems: 'center',       // vertical center
+        justifyContent: 'center',   // horizontal center
+        position: 'relative',       // anchor for absolute children
         fontFamily: 'Montserrat',
-        overflow: 'hidden',
+        overflow: 'hidden',         // clip anything outside canvas
       },
       children: [
-        // Background Image
+
+        // ── LAYER 1: BACKGROUND IMAGE ──────────────────────────────────
+        // Fills entire canvas. objectFit:'cover' crops to fit (no distortion).
+        // Which image is used depends on bgImage per page or the default.
         {
           type: 'img',
           props: {
@@ -185,7 +211,18 @@ function createOGTemplate(page: PageConfig, bgImageDataUrl: string) {
             },
           },
         },
-        // Dark overlay
+
+        // ── LAYER 2: DARK OVERLAY ──────────────────────────────────────
+        // Semi-transparent gradient over the photo. Makes white text readable.
+        // Direction: 135deg = top-left → bottom-right diagonal.
+        //
+        // Color stops:
+        //   rgba(26,26,46, 0.88)  – dark navy,    88% opaque (top-left)
+        //   rgba(22,33,62, 0.85)  – dark blue,    85% opaque (center)
+        //   rgba(15,52,96, 0.82)  – deeper blue,  82% opaque (bottom-right)
+        //
+        // ↑ Increase alpha values → darker overlay → more contrast, less photo visible.
+        // ↓ Decrease alpha values → lighter overlay → more photo visible, less contrast.
         {
           type: 'div',
           props: {
@@ -199,26 +236,40 @@ function createOGTemplate(page: PageConfig, bgImageDataUrl: string) {
             },
           },
         },
-        // Main Card
+
+        // ── LAYER 3: GLASSMORPHISM CARD ────────────────────────────────
+        // A frosted-glass card that sits centered on the canvas.
+        // 1100×550 inside 1200×630 = 50px visible edge on each side.
         {
           type: 'div',
           props: {
             style: {
-              width: 1100,
-              height: 550,
-              borderRadius: 32,
-              padding: '48px 56px',
+              width: 1100,                // card width in px
+              height: 550,                // card height in px
+              borderRadius: 32,           // rounded corners (more pronounced than main project)
+              padding: '48px 56px',       // inner spacing (top/bottom, left/right)
               display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              position: 'relative',
+              flexDirection: 'column',    // stack children vertically
+              alignItems: 'center',       // center children horizontally
+              justifyContent: 'center',   // center children vertically
+              position: 'relative',       // anchor for glossy overlay + badge
+
+              // Card fill: white at 12% → 5% opacity = visible frosted tint
+              // 145deg = top-left to bottom-right, slightly steeper than the dark overlay
               background: 'linear-gradient(145deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.05) 100%)',
+
+              // Card border: white at 18% opacity = faint edge line
               border: '1px solid rgba(255,255,255,0.18)',
+
+              // Drop shadow: black 50% opacity, 25px blur, pushed down
               boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
             },
             children: [
-              // Glossy overlay
+
+              // ── LAYER 4: GLOSSY OVERLAY ──────────────────────────────
+              // Covers the top 50% of the card. Simulates light hitting a glass surface.
+              // Gradient: white at 15% opacity at top → 2% at 60% height → fully transparent.
+              // Increase 0.15/0.02 for a shinier look, decrease for subtler effect.
               {
                 type: 'div',
                 props: {
@@ -227,64 +278,79 @@ function createOGTemplate(page: PageConfig, bgImageDataUrl: string) {
                     top: 0,
                     left: 0,
                     right: 0,
-                    height: '50%',
-                    borderRadius: '32px 32px 0 0',
+                    height: '50%',                  // covers top half of card
+                    borderRadius: '32px 32px 0 0',  // match card's top corners
                     background: 'linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.02) 60%, transparent 100%)',
                   },
                 },
               },
-              // Badge
+
+              // ── BADGE ────────────────────────────────────────────────
+              // Small pill label pinned to top of card. Shows domain/label.
+              // White bg at 15% opacity, border at 25% opacity.
+              // Text: white at 90% opacity, Montserrat Medium (500).
               {
                 type: 'div',
                 props: {
                   style: {
                     position: 'absolute',
-                    top: 28,
+                    top: 28,               // 28px from card top
                     display: 'flex',
-                    padding: '10px 28px',
-                    borderRadius: 50,
-                    background: 'rgba(255,255,255,0.15)',
-                    border: '1px solid rgba(255,255,255,0.25)',
+                    padding: '10px 28px',  // vertical, horizontal padding
+                    borderRadius: 50,      // fully rounded pill shape
+                    background: 'rgba(255,255,255,0.15)',   // 15% white fill
+                    border: '1px solid rgba(255,255,255,0.25)', // 25% white edge
                     fontSize: 20,
-                    fontWeight: 500,
-                    color: 'rgba(255,255,255,0.9)',
+                    fontWeight: 500,       // Medium weight
+                    color: 'rgba(255,255,255,0.9)',  // 90% white text
                     letterSpacing: '0.5px',
                   },
                   children: page.badge,
                 },
               },
-              // Title
+
+              // ── TITLE ────────────────────────────────────────────────
+              // Main headline. Largest text on the image.
+              // 64px, Bold (700), fully opaque white.
+              // letterSpacing: -1px tightens character spacing for a modern look.
               {
                 type: 'div',
                 props: {
                   style: {
                     marginTop: 32,
-                    fontSize: 64,
-                    fontWeight: 700,
-                    color: '#ffffff',
+                    fontSize: 64,          // ~35 chars max before overflow
+                    fontWeight: 700,       // Bold
+                    color: '#ffffff',       // 100% white – highest visual weight
                     textAlign: 'center',
-                    lineHeight: 1.1,
-                    letterSpacing: '-1px',
+                    lineHeight: 1.1,       // tight line spacing
+                    letterSpacing: '-1px', // slightly condensed
                   },
                   children: page.title,
                 },
               },
-              // Subtitle
+
+              // ── SUBTITLE ─────────────────────────────────────────────
+              // Secondary text below title.
+              // 32px, Medium (500), white at 85% opacity = slightly dimmer than title.
               {
                 type: 'div',
                 props: {
                   style: {
                     marginTop: 8,
-                    fontSize: 32,
-                    fontWeight: 500,
-                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: 32,          // ~50 chars max before overflow
+                    fontWeight: 500,       // Medium
+                    color: 'rgba(255,255,255,0.85)', // 85% white – visual hierarchy below title
                     textAlign: 'center',
                     lineHeight: 1.3,
                   },
                   children: page.subtitle,
                 },
               },
-              // Divider (with custom colors)
+
+              // ── DIVIDER ──────────────────────────────────────────────
+              // Thin horizontal accent line between subtitle and description.
+              // 120px wide, 3px tall. Uses accentColors (per-page or default).
+              // Default gradient: orange → green → blue (brand colors).
               {
                 type: 'div',
                 props: {
@@ -297,18 +363,22 @@ function createOGTemplate(page: PageConfig, bgImageDataUrl: string) {
                   },
                 },
               },
-              // Description
+
+              // ── DESCRIPTION ──────────────────────────────────────────
+              // Longer text below divider. Wraps at 900px max width (~2 lines).
+              // 24px, Regular (400), white at 70% opacity = clearly subordinate to title/subtitle.
+              // ~150 chars max before it starts to look crowded.
               {
                 type: 'div',
                 props: {
                   style: {
                     marginTop: 28,
-                    maxWidth: 900,
+                    maxWidth: 900,         // text wrap boundary
                     fontSize: 24,
-                    fontWeight: 400,
-                    color: 'rgba(255,255,255,0.7)',
+                    fontWeight: 400,       // Regular
+                    color: 'rgba(255,255,255,0.7)', // 70% white – lowest in text hierarchy
                     textAlign: 'center',
-                    lineHeight: 1.5,
+                    lineHeight: 1.5,       // comfortable reading spacing
                   },
                   children: page.description,
                 },
