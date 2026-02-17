@@ -2,7 +2,8 @@
  * generate-og-images.ts
  * 
  * Build-time OG image generation using Satori + Resvg.
- * Generates multiple OG images for different pages.
+ * Generates multiple OG images for different pages with
+ * optional per-page background images and accent colors.
  * 
  * Run: npx tsx scripts/generate-og-images.ts
  */
@@ -27,10 +28,10 @@ const OG_HEIGHT = 630;
 
 const OUTPUT_DIR = join(PROJECT_ROOT, 'public', 'og');
 const FONTS_DIR = join(PROJECT_ROOT, 'assets', 'fonts');
-const BG_IMAGE_PATH = join(PROJECT_ROOT, 'assets', 'bg', 'og-background.jpg');
 
-// Background image URL (fallback if local file doesn't exist)
-const BG_IMAGE_URL = 'https://assets.jozapf.de/jpg/og_image_v2_1200x630_jozapf_de.jpg';
+// Default background image (used when page has no bgImage override)
+const DEFAULT_BG_PATH = join(PROJECT_ROOT, 'assets', 'bg', 'og-background.jpg');
+const DEFAULT_BG_URL = 'https://assets.jozapf.de/jpg/og_image_v2_1200x630_jozapf_de.jpg';
 
 // ============================================================================
 // PAGE CONFIGURATIONS - Add your pages here
@@ -42,6 +43,8 @@ interface PageConfig {
   subtitle: string;    // Secondary text
   description: string; // Longer description
   badge: string;       // Top badge text
+  // Optional: Per-page background image (path relative to project root)
+  bgImage?: string;
   // Optional: Override colors per page
   accentColors?: {
     start: string;
@@ -85,6 +88,16 @@ const PAGES: PageConfig[] = [
       end: '#06b6d4',    // Cyan
     },
   },
+
+  // ── Example: Per-page background image ──────────────
+  // {
+  //   slug: 'special-page',
+  //   title: 'Special Page',
+  //   subtitle: 'With Custom Background',
+  //   description: 'This page uses its own background image.',
+  //   badge: 'example',
+  //   bgImage: 'assets/bg/special-background.jpg',
+  // },
 ];
 
 // ============================================================================
@@ -315,7 +328,7 @@ function createOGTemplate(page: PageConfig, bgImageDataUrl: string) {
 async function generateOGImage(
   page: PageConfig,
   bgImageDataUrl: string,
-  fonts: { name: string; data: Buffer; weight: number; style: 'normal' }[]
+  fonts: { name: string; data: Buffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900; style: 'normal' }[]
 ): Promise<string> {
   const filename = `og-${page.slug}.png`;
   
@@ -352,32 +365,60 @@ async function main() {
   }
   console.log(`✓ Output directory: ${OUTPUT_DIR}`);
 
-  // Load or download background image
-  let bgImageDataUrl: string;
-  if (existsSync(BG_IMAGE_PATH)) {
-    console.log('✓ Loading local background image...');
-    bgImageDataUrl = loadImageAsBase64(BG_IMAGE_PATH);
+  // ── Load background images ──────────────────────────
+  // Collect unique background image paths
+  const bgPaths = new Set<string>();
+  bgPaths.add(DEFAULT_BG_PATH); // Always load default
+  for (const page of PAGES) {
+    if (page.bgImage) {
+      bgPaths.add(join(PROJECT_ROOT, page.bgImage));
+    }
+  }
+
+  // Load/download default background
+  const bgCache = new Map<string, string>();
+
+  if (existsSync(DEFAULT_BG_PATH)) {
+    console.log('✓ Loading default background image...');
+    bgCache.set(DEFAULT_BG_PATH, loadImageAsBase64(DEFAULT_BG_PATH));
   } else {
-    console.log('⬇️  Downloading background image...');
+    console.log('⬇️  Downloading default background image...');
     try {
-      const buffer = await downloadFile(BG_IMAGE_URL);
-      bgImageDataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
-      
+      const buffer = await downloadFile(DEFAULT_BG_URL);
+      const dataUrl = `data:image/jpeg;base64,${buffer.toString('base64')}`;
+      bgCache.set(DEFAULT_BG_PATH, dataUrl);
+
       // Save for future builds
-      const bgDir = dirname(BG_IMAGE_PATH);
+      const bgDir = dirname(DEFAULT_BG_PATH);
       if (!existsSync(bgDir)) mkdirSync(bgDir, { recursive: true });
-      writeFileSync(BG_IMAGE_PATH, buffer);
+      writeFileSync(DEFAULT_BG_PATH, buffer);
       console.log('   ✓ Saved locally for future builds');
     } catch (error) {
       console.error('   ❌ Failed to download background image');
       console.log('   Using gradient-only fallback');
-      bgImageDataUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+      bgCache.set(DEFAULT_BG_PATH, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==');
     }
   }
 
-  // Load fonts
+  // Load per-page background images
+  for (const page of PAGES) {
+    if (page.bgImage) {
+      const fullPath = join(PROJECT_ROOT, page.bgImage);
+      if (!bgCache.has(fullPath)) {
+        if (existsSync(fullPath)) {
+          console.log(`✓ Loading background for "${page.slug}"...`);
+          bgCache.set(fullPath, loadImageAsBase64(fullPath));
+        } else {
+          console.warn(`⚠️  Background not found for "${page.slug}": ${page.bgImage}`);
+          console.log(`   Falling back to default background`);
+        }
+      }
+    }
+  }
+
+  // ── Load fonts ──────────────────────────────────────
   const fontFiles = ['Montserrat-Bold.ttf', 'Montserrat-Medium.ttf', 'Montserrat-Regular.ttf'];
-  const fonts: { name: string; data: Buffer; weight: number; style: 'normal' }[] = [];
+  const fonts: { name: string; data: Buffer; weight: 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900; style: 'normal' }[] = [];
 
   for (const fontFile of fontFiles) {
     const fontPath = join(FONTS_DIR, fontFile);
@@ -387,7 +428,7 @@ async function main() {
       process.exit(1);
     }
     
-    const weight = fontFile.includes('Bold') ? 700 : fontFile.includes('Medium') ? 500 : 400;
+    const weight = (fontFile.includes('Bold') ? 700 : fontFile.includes('Medium') ? 500 : 400) as 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900;
     fonts.push({
       name: 'Montserrat',
       data: readFileSync(fontPath),
@@ -397,14 +438,21 @@ async function main() {
   }
   console.log('✓ Fonts loaded');
 
-  // Generate OG images for all pages
+  // ── Generate OG images ──────────────────────────────
   console.log('\n📄 Generating images:');
   
   const generated: string[] = [];
   for (const page of PAGES) {
+    // Resolve background: per-page override → default
+    let bgDataUrl = bgCache.get(DEFAULT_BG_PATH) || '';
+    if (page.bgImage) {
+      const fullPath = join(PROJECT_ROOT, page.bgImage);
+      bgDataUrl = bgCache.get(fullPath) || bgDataUrl;
+    }
+
     process.stdout.write(`   → ${page.slug}...`);
     try {
-      const filename = await generateOGImage(page, bgImageDataUrl, fonts);
+      const filename = await generateOGImage(page, bgDataUrl, fonts);
       generated.push(filename);
       console.log(` ✓ ${filename}`);
     } catch (error) {

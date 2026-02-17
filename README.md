@@ -95,6 +95,16 @@ const PAGES: PageConfig[] = [
     description: 'What this post is about.',
     badge: 'blog',
   },
+  
+  // Page with custom background image
+  {
+    slug: 'special-page',            // → public/og/og-special-page.png
+    title: 'Special Page',
+    subtitle: 'With Custom Background',
+    description: 'This page uses its own background image.',
+    badge: 'special',
+    bgImage: 'assets/bg/special-background.jpg',
+  },
 ];
 ```
 
@@ -107,6 +117,7 @@ const PAGES: PageConfig[] = [
 | `subtitle` | Yes | Secondary text below title |
 | `description` | Yes | Longer description text |
 | `badge` | Yes | Top badge/label |
+| `bgImage` | No | Per-page background image path (relative to project root) |
 | `accentColors` | No | Custom gradient colors (start, middle, end) |
 
 ---
@@ -176,12 +187,24 @@ npm run build
 
 ## 🎨 Customization
 
-### Background Image
+### Background Images
 
-Place your own image at:
+The **default** background image applies to all pages:
 ```
 assets/bg/og-background.jpg
 ```
+
+You can also set a **per-page** background via the `bgImage` field:
+```typescript
+{
+  slug: 'internship',
+  title: 'Internship Page',
+  // ...
+  bgImage: 'assets/bg/internship-bg.jpg',  // relative to project root
+}
+```
+
+Pages without `bgImage` use the default. If the default is missing, it will be auto-downloaded on first build.
 
 Supported formats: `.jpg`, `.jpeg`, `.png`, `.webp`  
 Recommended size: 1200×630px or larger
