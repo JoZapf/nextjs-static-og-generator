@@ -9,7 +9,7 @@
 > Build-time Open Graph image generation for Next.js static export projects.
 > No server, no edge functions – just static PNGs that work anywhere.
 
-![Teaser](github-gfx-teaser_web.jpg)
+![Teaser](og-generator-architecture_v2.svg)
 
 ---
 
