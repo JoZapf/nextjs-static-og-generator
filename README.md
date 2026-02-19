@@ -97,14 +97,6 @@ dynamic-og/
 
 ---
 
-## Testing OG Images
-
-- [Meta Debug – toolbox.jozapf.de](https://toolbox.jozapf.de/meta_debug_web.py)
-- [Facebook Sharing Debugger](https://developers.facebook.com/tools/debug/)
-- [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/)
-
----
-
 ## License
 
 [MIT](./LICENSE) – © 2025 [Jo Zapf](https://jozapf.de)
