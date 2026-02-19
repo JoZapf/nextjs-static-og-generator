@@ -1,3 +1,13 @@
+/**
+ * page.tsx – Preview page for generated OG images
+ *
+ * @author    Jo Zapf <https://jozapf.de>
+ * @license   MIT
+ * @version   1.0.0
+ * @since     2025-12
+ * @see       https://github.com/JoZapf/nextjs-static-og-generator
+ */
+
 import { readFileSync, existsSync, readdirSync } from 'fs';
 import { join } from 'path';
 import { marked } from 'marked';

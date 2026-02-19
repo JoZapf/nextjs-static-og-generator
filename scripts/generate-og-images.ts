@@ -1,11 +1,17 @@
 /**
  * generate-og-images.ts
- * 
+ *
  * Build-time OG image generation using Satori + Resvg.
  * Generates multiple OG images for different pages with
  * optional per-page background images and accent colors.
- * 
+ *
  * Run: npx tsx scripts/generate-og-images.ts
+ *
+ * @author    Jo Zapf <https://jozapf.de>
+ * @license   MIT
+ * @version   1.0.0
+ * @since     2025-12
+ * @see       https://github.com/JoZapf/nextjs-static-og-generator
  */
 
 import satori from 'satori';

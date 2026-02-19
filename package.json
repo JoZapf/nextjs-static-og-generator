@@ -1,8 +1,27 @@
 {
   "name": "dynamic-og-generator",
   "version": "1.0.0",
-  "private": true,
+  "private": false,
   "description": "Build-time OG image generation for Next.js static export",
+  "author": "Jo Zapf <https://jozapf.de>",
+  "license": "MIT",
+  "homepage": "https://github.com/JoZapf/nextjs-static-og-generator#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JoZapf/nextjs-static-og-generator.git"
+  },
+  "bugs": {
+    "url": "https://github.com/JoZapf/nextjs-static-og-generator/issues"
+  },
+  "keywords": [
+    "og-image",
+    "open-graph",
+    "satori",
+    "nextjs",
+    "static-export",
+    "build-time",
+    "social-media"
+  ],
   "scripts": {
     "setup": "tsx scripts/download-fonts.ts",
     "generate:og": "tsx scripts/generate-og-images.ts",

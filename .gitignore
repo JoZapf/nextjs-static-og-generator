@@ -1,6 +1,8 @@
-# =========================
-# Dynamic OG Generator - .gitignore
-# =========================
+# .gitignore – Dynamic OG Generator
+#
+# Author:    Jo Zapf <https://jozapf.de>
+# License:   MIT
+# Repo:      https://github.com/JoZapf/nextjs-static-og-generator
 
 # Dependencies
 node_modules/

@@ -1,8 +1,14 @@
 /**
  * download-fonts.ts
- * 
+ *
  * Downloads Montserrat font files from Google Fonts for offline builds.
  * Run: npx tsx scripts/download-fonts.ts
+ *
+ * @author    Jo Zapf <https://jozapf.de>
+ * @license   MIT
+ * @version   1.0.0
+ * @since     2025-12
+ * @see       https://github.com/JoZapf/nextjs-static-og-generator
  */
 
 import { writeFileSync, mkdirSync, existsSync } from 'fs';

@@ -1,3 +1,13 @@
+/**
+ * layout.tsx – Root layout with OG meta tags
+ *
+ * @author    Jo Zapf <https://jozapf.de>
+ * @license   MIT
+ * @version   1.0.0
+ * @since     2025-12
+ * @see       https://github.com/JoZapf/nextjs-static-og-generator
+ */
+
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';

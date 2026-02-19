@@ -1,4 +1,12 @@
-/* globals.css - Dynamic OG Generator */
+/**
+ * globals.css – Dark theme for the OG Generator preview app
+ *
+ * @author    Jo Zapf <https://jozapf.de>
+ * @license   MIT
+ * @version   1.0.0
+ * @since     2025-12
+ * @see       https://github.com/JoZapf/nextjs-static-og-generator
+ */
 
 :root {
   --bg-primary: #0f172a;
